@@ -1,0 +1,297 @@
+version: '3'
+services:
+  namenode:
+    build: ./hadoop/namenode
+    restart: always
+    container_name: namenode
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    ports:
+      - "32763:9870"
+      - "9010:9000"
+    environment:
+      - CLUSTER_NAME=hadoop
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "namenode", "9870" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+  datanode-1:
+    build: ./hadoop/datanode
+    restart: always
+    container_name: datanode-1
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - namenode
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "datanode-1", "9864" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+  
+  datanode-2:
+    build: ./hadoop/datanode
+    restart: always
+    container_name: datanode-2
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - namenode
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "datanode-2", "9864" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+  datanode-3:
+    build: ./hadoop/datanode
+    restart: always
+    container_name: datanode-3
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - namenode
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "datanode-3", "9864" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+  
+  resourcemanager:
+    build: ./hadoop/resourcemanager/
+    container_name: resourcemanager
+    restart: always
+    ports:
+      - 8088:8088
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode-3:9864 datanode-1:9864 datanode-2:9864"
+
+  historyserver:
+    build: ./hadoop/historyserver/
+    container_name: historyserver
+    restart: always
+    ports:
+      - 8188:8188
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 resourcemanager:8088 datanode-3:9864 datanode-1:9864 datanode-2:9864"
+
+
+  nodemanager-1:
+    build: ./hadoop/nodemanager/
+    container_name: nodemanager-1
+    restart: always
+    ports:
+      - 8042:8042
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode-1:9864"
+
+  nodemanager-2:
+    build: ./hadoop/nodemanager/
+    container_name: nodemanager-2
+    restart: always
+    ports:
+      - 8043:8042
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode-2:9864"
+
+  nodemanager-3:
+    build: ./hadoop/nodemanager/
+    container_name: nodemanager-3
+    restart: always
+    ports:
+      - 8044:8042
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    environment:
+      SERVICE_PRECONDITION: "namenode:9000 namenode:9870 datanode-3:9864"
+
+  hive-metastore:
+    build: ./hive/metastore
+    restart: always
+    container_name: hive-metastore
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - namenode
+      - datanode-1
+      - datanode-2
+      - datanode-3
+      - postgres
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870 datanode-3:9864 datanode-1:9864 datanode-2:9864
+    ports:
+      - "32761:9083"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "hive-metastore", "9083" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+  hive-server:
+    build: ./hive/server
+    restart: always
+    volumes:
+      - ./projects:/projects/
+      - ./data:/data
+    container_name: hive-server
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - hive-metastore
+    environment:
+      - SERVICE_PRECONDITION=hive-metastore:9083
+    ports:
+      - "32760:10000"
+      - "32759:10002"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "hive-server", "10002" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+  postgres:
+    build: './hive/postgres'
+    restart: always
+    container_name: postgres
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    ports:
+      - "5433:5432"
+  # hue:
+  #   build: ./hue/
+  #   restart: always
+  #   container_name: hue
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #         max-file: "5"
+  #         max-size: "10m"
+  #   depends_on:
+  #     - hive-server
+  #     - postgres
+  #   ports:
+  #     - "32762:8888"
+  #   volumes:
+  #     - ./hue/hue.ini:/usr/share/hue/desktop/conf/z-hue.ini
+  #   environment:
+  #     - SERVICE_PRECONDITION=hive-server:10000 postgres:5432
+  #   healthcheck:
+  #     test: [ "CMD", "nc", "-z", "hue", "8888" ]
+  #     timeout: 45s
+  #     interval: 10s
+  #     retries: 10
+
+  spark-master:
+    build: ./spark/master
+    restart: always
+    container_name: spark-master
+    volumes:
+      - ./projects:/projects/
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    ports:
+      - "32766:8082"
+      - "32765:7077"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-master", "8082" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+  spark-worker:
+    build: ./spark/worker
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - spark-master
+    ports:
+      - "32764:8081"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "spark-worker", "8081" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+  
+  livy:
+    build: ./livy
+    restart: always
+    container_name: livy
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "5"
+          max-size: "10m"
+    depends_on:
+      - spark-worker
+    ports:
+      - "32758:8998"
+    environment:
+      - SPARK_MASTER_ENDPOINT=spark-master
+      - SPARK_MASTER_PORT=7077
+      - DEPLOY_MODE=client
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "livy", "8998" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+
+networks:
+  default:
+    name: apache-network
