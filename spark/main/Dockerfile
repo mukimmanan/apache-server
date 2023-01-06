@@ -4,7 +4,7 @@ LABEL maintainer="Manan Mukim"
 # Defining useful environment variables
 ENV SPARK_VERSION=3.3.1
 ENV HADOOP_VERSION=3
-ENV SCALA_VERSION=2.13.1
+ENV SCALA_VERSION=2.12.15
 ENV SCALA_HOME=/usr/share/scala
 ENV SPARK_HOME=/usr/local/spark
 ENV SBT_VERSION=1.8.2
@@ -73,6 +73,7 @@ RUN apt-get autoremove -yqq --purge && \
     rm -rf /tmp/* /var/tmp/*
 
 WORKDIR /
+ENV YARN_CONF_DIR=/etc/hadoop
 
 COPY ./entrypoint.sh .
 RUN chmod +x entrypoint.sh
