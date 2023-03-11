@@ -1,0 +1,41 @@
+# Topics
+1. It's like a table in a database.
+2. A topic is identified by its name.
+3. Any kind of message format is allowed.
+4. The sequence of message is called data stream.
+5. It can have multiple partitions.
+6. Kafka topic is immutable (once a data is written to a partition, it cannot be changed).
+7. Data is kept for a limited time. (default is 1 week)
+8. Offset only have meaning for a specific partition.
+9. Order is guaranteed only within a partition.
+10. Data is assigned randomly to a partition, unless a key is provided.
+
+# Producers & Serialization
+1. Producers published data to a topic.
+2. It can choose to send a key with the message.
+3. If key = null, then data is sent in round-robin fashion.
+4. If key != null, then all the messages for that key will always go to the same partition (using hashing)
+5. It only accepts bytes as an input from producers and sends bytes out as an output to consumers.
+6. Message serialization here means transforming objects/data into bytes.
+7. Serialization is used on both key & value/
+
+# Consumers & Deserialization
+1. It reads data from a topic (identified by a name) - pull model
+2. Consumers automatically knows which broker to read from.
+3. In case of broker failures, it knows how to recover
+4. Data is read in order from low to high offset within each partition.
+
+# Consumer offsets
+1. Kafka stores the offset at which a consumer group has been reading.
+2. The offsets committed are in kafka topic named __consumer_offsets.
+3. By default, java consumers will automatically commit offsets.
+4. At-least once -> offsets are committed after the message is processed.
+5. At-most once -> offsets are committed as soon as messages are received.
+6. Exactly once -> use the Transaction api.
+
+kafka 2.4+ allows consumer to read from nearest conusmer.
+
+# Producer acknowledgment
+1. acks = 0, producer won't wait for acknowledgment (no data loss)
+2. acks = 1, producer will wait for leader acknowledgment. (limited data loss)
+3. acks = all, leader + replicas acknowledgement.
