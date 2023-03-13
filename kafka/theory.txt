@@ -39,3 +39,10 @@ kafka 2.4+ allows consumer to read from nearest conusmer.
 1. acks = 0, producer won't wait for acknowledgment (no data loss)
 2. acks = 1, producer will wait for leader acknowledgment. (limited data loss)
 3. acks = all, leader + replicas acknowledgement.
+
+Static Group Membership (Consumer Group)
+1. By default, when a consumer leaves a group, its partition are revoked and re-assigned.
+2. If it joins back, it will have a new memberId and new partition is assigned it.
+3. If you specify group.instance.id it makes the consumer a static member.
+4. Upon leaving, the consumer has session.timeout.ms to join back and get back partition before triggering a re-balance.
+5. This is helpful when consumer maintain local state and cache.
