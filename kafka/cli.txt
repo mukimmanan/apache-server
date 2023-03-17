@@ -1,0 +1,41 @@
+kafka-topics --bootstrap-server broker1:9093 --topic first_topic --create --partitions 3 --replication-factor 1
+kafka-topics --bootstrap-server broker1:9093 --topic first_topic --describe
+kafka-topics --bootstrap-server broker1:9093 --list
+kafka-topics --bootstrap-server broker1:9093 --topic first_topic --delete
+
+## Add --command-config for secure connection configuration
+
+kafka-console-producer --bootstrap-server broker1:9092 --topic first_topic --producer-property acks=all
+kafka-console-producer --bootstrap-server broker1:9092 --topic first_topic --producer-property acks=all --property parse.key=true --property key.separator=:
+
+## Add --producer-config
+
+kafka-console-consumer --bootstrap-server broker1:9092 --topic first_topic --from-beginning
+kafka-console-consumer --bootstrap-server broker1:9092 --producer.property partitioner.class=org.apache.kafka.clients.producer.RoundRobinPartitioner --topic first_topic
+--formatter kafka.tools.DefaultMessageFormatter
+--property print.timestamp=true, print.key=true, print.value=true, print.partition=true
+
+
+kafka-consumer-groups --bootstrap-server broker1:9092 --list
+kafka-consumer-groups --bootstrap-server broker1:9092 --group my-first-app --reset-offsets --to-earliest --execute --topic first_topic
+
+auto.commit.interval.ms
+
+Consumer Group
+1. Eager Re-balance
+2. Incremental Re-balance
+
+partition.assignment.strategy -
+1. Range Assignor (Eager)
+2. Round Robin (Eager)
+3. Sticky Assigner (Eager)
+4. Cooperative Sticky Assignor
+
+
+kafka-configs.sh --bootstrap-server localhost:9092 --alter --entity-type topics --entity-name configured-topic --add-config min.insync.replicas=2
+# We can enable compression on broker as well as topic side as well
+
+max.block.ms && buffer.memory
+If the producer produces faster than the broker can take, the records will be buffered in the memory of the producer
+If the buffer is full then the .send() method will start to block
+max.block.ms is the time .send will block until throwing an exception.

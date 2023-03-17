@@ -55,3 +55,41 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.0
+    hostname: kafka-schema-registry
+    container_name: kafka-schema-registry
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://broker1:9092
+      SCHEMA_REGISTRY_HOST_NAME: kafka-schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    depends_on:
+      - zookeeper
+      - broker1
+
+  conduktor-platform:
+    image: conduktor/conduktor-platform:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - conduktor_data:/var/conduktor
+      - type: bind
+        source: "./platform-config.yaml"
+        target: /opt/conduktor/platform-config.yaml
+        read_only: true
+    depends_on:
+      - broker1
+      - kafka-schema-registry
+    environment:
+      CDK_IN_CONF_FILE: /opt/conduktor/platform-config.yaml
+      KAFKA_BOOTSTRAP_SERVER: PLAINTEXT://broker1:9092,PLAINTEXT://broker2:9092,PLAINTEXT://broker3:9092
+      SR_SERVER: "http://kafka-schema-registry:8081"
+      ORGANISATION_NAME: "default"
+      ADMIN_EMAIL: "admin@conduktor.io"
+      ADMIN_PSW: "admin"
+
+volumes:
+  conduktor_data: {}
