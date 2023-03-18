@@ -75,7 +75,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - conduktor_data:/var/conduktor
+      - /var/conduktor
       - type: bind
         source: "./platform-config.yaml"
         target: /opt/conduktor/platform-config.yaml
