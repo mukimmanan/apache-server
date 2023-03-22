@@ -46,3 +46,8 @@ Static Group Membership (Consumer Group)
 3. If you specify group.instance.id it makes the consumer a static member.
 4. Upon leaving, the consumer has session.timeout.ms to join back and get back partition before triggering a re-balance.
 5. This is helpful when consumer maintain local state and cache.
+
+Delivery Semantics
+1. At most once: Offsets are committed as soon as message batch is received. If the process goes wrong the message will be lost.
+2. At least once: Offsets are committed after the message is processed.
+3. Exactly once: Can be achieved using kafka streams API (Transactional API)

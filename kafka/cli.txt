@@ -39,3 +39,23 @@ max.block.ms && buffer.memory
 If the producer produces faster than the broker can take, the records will be buffered in the memory of the producer
 If the buffer is full then the .send() method will start to block
 max.block.ms is the time .send will block until throwing an exception.
+
+# Broker
+offset.retention.minutes (default 7days)
+
+Consumer in a group talks to a consumer group coordinator, to detect consumer that are down there is an heartbeat
+mechanism and a polling mechanism
+heartbeat.interval.ms, usually set to 1/3 of session.timeout.ms
+max.poll.interval.ms -> Maximum amount of time b/w 2 poll calls before declaring the consumer dead
+max.poll.records -> number of messages to pull at the time
+fetch.min.bytes -> controls how much data you want to poll at least on each request
+fetch.max.wait.ms -> The amount of time the kafka broker will block the fetch request if there isn't sufficient data
+to immediately satisfy the requirement given by fetch.min.bytes
+
+max.partition.fetch.bytes -> The max amount of data per partition the server will return
+fetch.max.bytes -> max data returned
+
+If small cluster (< 6 broker) -> partition  = 3 * no.of brokers
+Big cluster (12 cluster) -> 2 * no.of brokers
+
+- kafka-configs
