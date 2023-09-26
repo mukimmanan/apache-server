@@ -39,7 +39,7 @@
     </property>
     <property>
         <name>scheduler.capacity.root.default.maximum-allocation-vcores</name>
-        <value>4</value>
+        <value>2</value>
     </property>
     <property>
         <name>resourcemanager.fs.state-store.uri</name>

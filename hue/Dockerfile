@@ -10,10 +10,12 @@ RUN apt-get  install -y \
     libgnutls30 \
     netcat
 RUN mv /etc/apt/sources.list.d/nodesource.list.disabled /etc/apt/sources.list.d/nodesource.list
-
 COPY ./entrypoint.sh .
-
+RUN mkdir hive
+COPY  ./hive-site.xml /hive/
 RUN chmod +x ./entrypoint.sh
+
+RUN /usr/share/hue/build/env/bin/pip install thrift-sasl
 
 ENTRYPOINT [ "./entrypoint.sh" ]
 
